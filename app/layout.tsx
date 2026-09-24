@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { Inter, Oswald } from "next/font/google";
+import { FitLogProvider } from "@/context/FitLogContext";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -15,7 +18,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={`${inter.variable} ${oswald.variable}`}>
       <body className="min-h-screen flex flex-col font-sans antialiased">
-        {children}
+        <FitLogProvider>
+          <Navbar />
+          <main className="flex-1">{children}</main>
+          <Footer />
+        </FitLogProvider>
       </body>
     </html>
   );
