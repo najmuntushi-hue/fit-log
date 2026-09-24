@@ -1,96 +1,147 @@
-import Image from "next/image";
-import Link from "next/link";
-import { notFound } from "next/navigation";
-import { ArrowLeft } from "lucide-react";
-import { getWorkout } from "@/lib/api";
-import WorkoutActions from "@/components/WorkoutActions";
+"use client";
 
-export default async function WorkoutDetailPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const { id } = await params;
-  const workout = await getWorkout(id);
+import { useEffect, useMemo, useState } from "react";
+import { ChevronDown } from "lucide-react";
+import Hero from "@/components/Hero";
+import WorkoutCard from "@/components/WorkoutCard";
+import type { Workout } from "@/types/workout";
 
-  if (!workout) notFound();
+const API_URL = "https://api.abcz.workers.dev/api/fitlog";
 
-  const specs = [
-    { label: "Equipment", value: workout.equipment },
-    { label: "Difficulty", value: workout.difficulty },
-    { label: "Sets", value: String(workout.sets) },
-    { label: "Reps", value: workout.reps },
-    { label: "Duration", value: `${workout.duration} min` },
-    { label: "Calories", value: `${workout.caloriesBurned} kcal` },
-    { label: "Rating", value: String(workout.rating) },
-  ];
+type SortOption = "duration" | "calories" | "rating";
+
+export default function Home() {
+  const [workouts, setWorkouts] = useState<Workout[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [sortBy, setSortBy] = useState<SortOption>("duration");
+
+  useEffect(() => {
+    async function loadWorkouts() {
+      try {
+        const response = await fetch(API_URL);
+
+        if (!response.ok) {
+          throw new Error("Failed to load workouts");
+        }
+
+        const data = await response.json();
+        setWorkouts(data);
+      } catch (error) {
+        console.error("Failed to load workouts:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadWorkouts();
+  }, []);
+
+  const sortedWorkouts = useMemo(() => {
+    const list = [...workouts];
+
+    if (sortBy === "duration") {
+      return list.sort((a, b) => a.duration - b.duration);
+    }
+
+    if (sortBy === "calories") {
+      return list.sort((a, b) => b.caloriesBurned - a.caloriesBurned);
+    }
+
+    return list.sort((a, b) => b.rating - a.rating);
+  }, [workouts, sortBy]);
 
   return (
-    <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-5 sm:py-8">
-      <Link href="/" className="mb-6 inline-flex items-center gap-2 text-sm text-muted transition hover:text-accent">
-        <ArrowLeft className="h-4 w-4" />
-        Back to library
-      </Link>
+    <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-5 sm:py-8">
+      {/* Hero Section */}
+      <Hero />
 
-      <div className="grid gap-8 lg:grid-cols-2">
-        <div className="relative aspect-[4/3] overflow-hidden rounded-2xl border border-line lg:aspect-auto lg:min-h-[560px]">
-          <Image
-            src={workout.image}
-            alt={workout.name}
-            fill
-            priority
-            sizes="(min-width: 1024px) 50vw, 100vw"
-            className="object-cover"
-          />
-        </div>
+      {/* Workout Library */}
+      <section id="library" className="scroll-mt-24 pt-16">
+        {/* Library Header */}
+        <div className="mb-8 flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-sm font-semibold tracking-[0.2em] text-lime-400">
+              WORKOUT LIBRARY
+            </p>
 
-        <div>
-          <div className="flex flex-wrap gap-2">
-            {workout.muscleGroups.map((tag) => (
-              <span key={tag} className="rounded-full bg-accent px-2.5 py-0.5 text-[10px] font-bold uppercase text-black">
-                {tag}
-              </span>
-            ))}
-          </div>
-
-          <h1 className="mt-4 font-display text-4xl font-bold uppercase leading-tight sm:text-5xl">
-            {workout.name}
-          </h1>
-          <p className="mt-3 text-sm leading-relaxed text-muted sm:text-base">
-            {workout.description}
-          </p>
-
-          <div className="mt-6 overflow-hidden rounded-xl border border-line bg-surface">
-            <h2 className="border-b border-line px-4 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-accent">
-              Key Specs
+            <h2 className="mt-2 font-display text-3xl font-bold uppercase tracking-tight sm:text-4xl">
+              THE LIBRARY
             </h2>
-            {specs.map((s) => (
-              <div key={s.label} className="flex items-center justify-between border-b border-line px-4 py-3 text-sm last:border-b-0">
-                <span className="text-xs uppercase tracking-wide text-muted">{s.label}</span>
-                <span className="font-medium">{s.value}</span>
-              </div>
-            ))}
+
+            <p className="mt-2 text-sm text-muted">
+              Twelve lifts covering every major muscle group.
+            </p>
           </div>
 
-          <h2 className="mt-8 font-display text-xl font-semibold uppercase tracking-wide">
-            Instructions
-          </h2>
-          <ol className="mt-4 space-y-3">
-            {workout.instructions.map((step, i) => (
-              <li key={i} className="flex gap-3 text-sm leading-relaxed">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent text-xs font-bold text-black">
-                  {i + 1}
-                </span>
-                <span className="text-white/80">{step}</span>
-              </li>
-            ))}
-          </ol>
+          {/* Sort Dropdown */}
+          <div className="relative w-full sm:w-48">
+            <label
+              htmlFor="sort-workouts"
+              className="mb-2 block text-xs font-semibold uppercase tracking-widest text-muted"
+            >
+              Sort by
+            </label>
 
-          <div className="mt-8">
-            <WorkoutActions id={workout.id} />
+            <div className="relative">
+              <select
+                id="sort-workouts"
+                value={sortBy}
+                onChange={(e) =>
+                  setSortBy(e.target.value as SortOption)
+                }
+                className="w-full appearance-none rounded-full border border-white/15 bg-white/5 px-4 py-2.5 pr-10 text-sm font-medium text-white outline-none transition hover:bg-white/10 focus:border-accent"
+              >
+                <option value="duration" className="bg-zinc-900">
+                  Duration
+                </option>
+
+                <option value="calories" className="bg-zinc-900">
+                  Calories
+                </option>
+
+                <option value="rating" className="bg-zinc-900">
+                  Rating
+                </option>
+              </select>
+
+              <ChevronDown
+                size={16}
+                className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-white/60"
+              />
+            </div>
           </div>
         </div>
-      </div>
-    </div>
+
+        {/* Loading State */}
+        {loading ? (
+          <div className="flex min-h-[300px] items-center justify-center rounded-2xl border border-white/10 bg-white/5">
+            <p className="animate-pulse text-sm text-muted">
+              Loading workouts…
+            </p>
+          </div>
+        ) : sortedWorkouts.length === 0 ? (
+          /* Empty / Error State */
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-10 text-center">
+            <p className="text-lg font-semibold">
+              No workouts available
+            </p>
+
+            <p className="mt-2 text-sm text-muted">
+              Please try again in a moment.
+            </p>
+          </div>
+        ) : (
+          /* Workout Grid */
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {sortedWorkouts.map((workout) => (
+              <WorkoutCard
+                key={workout.id}
+                workout={workout}
+              />
+            ))}
+          </div>
+        )}
+      </section>
+    </main>
   );
 }
