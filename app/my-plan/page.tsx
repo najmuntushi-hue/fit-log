@@ -4,7 +4,6 @@ import WorkoutCard from "@/components/WorkoutCard";
 
 export default async function Home() {
   const workouts = await getWorkouts();
-
   return (
     <div className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-5 sm:py-8">
       <Hero />
