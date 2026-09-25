@@ -17,6 +17,9 @@ type Workout = {
   category?: string | string[];
   categories?: string[];
   equipment?: string;
+  difficulty?: string;
+  sets?: number | string;
+  reps?: number | string;
   duration?: number | string;
   calories?: number | string;
   caloriesBurned?: number | string;
@@ -222,6 +225,36 @@ export default function WorkoutDetailsPage() {
 
             <div className="rounded-xl border p-4">
               <p className="text-xs uppercase text-muted">
+                Difficulty
+              </p>
+
+              <p className="mt-1 font-semibold">
+                {workout.difficulty || "—"}
+              </p>
+            </div>
+
+            <div className="rounded-xl border p-4">
+              <p className="text-xs uppercase text-muted">
+                Sets
+              </p>
+
+              <p className="mt-1 font-semibold">
+                {workout.sets ?? "—"}
+              </p>
+            </div>
+
+            <div className="rounded-xl border p-4">
+              <p className="text-xs uppercase text-muted">
+                Reps
+              </p>
+
+              <p className="mt-1 font-semibold">
+                {workout.reps ?? "—"}
+              </p>
+            </div>
+
+            <div className="rounded-xl border p-4">
+              <p className="text-xs uppercase text-muted">
                 Duration
               </p>
 
@@ -267,7 +300,7 @@ export default function WorkoutDetailsPage() {
                 <Plus size={19} />
               )}
 
-              {isPlanned ? "In My Plan" : "Add to Plan"}
+              {isPlanned ? "In today's plan" : "Add to today's plan"}
             </button>
 
             <button
@@ -276,7 +309,7 @@ export default function WorkoutDetailsPage() {
             >
               <Bookmark size={19} />
 
-              {isSaved ? "Saved" : "Save for Later"}
+              {isSaved ? "Saved" : "Save for later"}
             </button>
           </div>
         </div>

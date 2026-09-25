@@ -10,7 +10,7 @@ const API_URL = "https://api.abcz.workers.dev/api/fitlog";
 type Workout = {
   id: number;
   name: string;
-  category: string;
+  muscleGroups: string[];
   equipment: string;
   duration: number;
   caloriesBurned: number;
@@ -208,7 +208,7 @@ export default function MyPlanPage() {
 
                     <div className="flex-1 p-5">
                       <p className="text-xs font-semibold uppercase tracking-widest text-accent">
-                        {workout.category}
+                        {workout.muscleGroups?.join(", ")}
                       </p>
 
                       <h3 className="mt-2 font-display text-2xl font-bold uppercase">
